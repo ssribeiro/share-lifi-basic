@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "commonjs",
+    "sourceMap": true,
+    "lib": ["es2021", "dom"],
+    "strictNullChecks": false, // we need this as false because it has been causing problems with firebase
+    "declaration": true,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "strict": false,
+    "noImplicitAny": false,
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    ".nyc_output",
+    ".vscode",
+    "coverage",
+    "dist",
+    "test",
+    "tests",
+    "documentation-output",
+    "node_modules",
+    "example/example.ts"
+  ]
+}

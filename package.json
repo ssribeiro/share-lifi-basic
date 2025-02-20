@@ -1,0 +1,36 @@
+{
+  "name": "share-lifi-basic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "commonjs",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "npx mocha --require ts-node/register tests/**/*.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ssribeiro/share-lifi-basic.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ssribeiro/share-lifi-basic/issues"
+  },
+  "homepage": "https://github.com/ssribeiro/share-lifi-basic#readme",
+  "dependencies": {
+    "@lifi/sdk": "^3.5.4",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^22.13.4",
+    "chai": "^4.2.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.5",
+    "mocha": "^6.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3",
+    "viem": "^2.23.3"
+  }
+}

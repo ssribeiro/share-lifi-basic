@@ -11,12 +11,12 @@ import {
   executeRoute,
 } from "@lifi/sdk";
 import { Chain } from "viem";
-import { createWalletClient, http } from "viem";
+import { createWalletClient, http, Client, Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum, mainnet, optimism, polygon, scroll } from "viem/chains";
 
 describe("Lifi Basic", async () => {
-  it.only("TEST LI.FI", async () => {
+  it("TEST LI.FI", async () => {
     // Let's use polygon provider drpc
     const provider = new ethers.JsonRpcProvider(
       "https://lb.drpc.org/ogrpc?network=polygon&dkey=" +
@@ -115,18 +115,17 @@ describe("Lifi Basic", async () => {
     expect(tx.hash).to.be.exist;
   }).timeout(4400000);
 
-  /*
-  it("TEST LI.FI WITH SDK", async () => {
+  it.only("TEST LI.FI WITH SDK", async () => {
     // Config li.fi with polygon:
     const account = privateKeyToAccount(
-      process.env.POLYGON_PRIVATE_KEY! as `0x${string}`
+      ("0x" + process.env.POLYGON_PRIVATE_KEY!) as Hex
     );
     const chains = [arbitrum, mainnet, optimism, polygon, scroll];
     const client = createWalletClient({
       account,
       chain: mainnet,
       transport: http(),
-    });
+    }) as Client;
 
     createConfig({
       apiKey: process.env.LIFI_API_KEY!,
@@ -140,7 +139,7 @@ describe("Lifi Basic", async () => {
               account,
               chain: chains.find((chain) => chain.id == chainId) as Chain,
               transport: http(),
-            }),
+            }) as Client,
         }),
       ],
     });
@@ -213,11 +212,10 @@ describe("Lifi Basic", async () => {
       updateRouteHook(route) {
         console.log("route hook update:");
         console.log(route);
-      },
-    });
-    console.log("executedRoute");
-    console.log(executedRoute);
-    /
+        },
+        });
+        console.log("executedRoute");
+        console.log(executedRoute);
+    */
   }).timeout(4400000);
-  */
 });

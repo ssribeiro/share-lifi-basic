@@ -16,7 +16,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { arbitrum, mainnet, optimism, polygon, scroll } from "viem/chains";
 
 describe("Lifi Basic", async () => {
-  it("TEST LI.FI", async () => {
+  it.only("TEST LI.FI", async () => {
     // Let's use polygon provider drpc
     const provider = new ethers.JsonRpcProvider(
       "https://lb.drpc.org/ogrpc?network=polygon&dkey=" +
@@ -40,6 +40,8 @@ describe("Lifi Basic", async () => {
       [
         "function balanceOf(address) view returns (uint)",
         "function decimals() view returns (uint8)",
+        "function allowance(address owner, address spender) view returns (uint256)",
+        "function approve(address spender, uint256 amount) public returns (bool)",
       ],
       wallet
     );
@@ -49,6 +51,8 @@ describe("Lifi Basic", async () => {
       [
         "function balanceOf(address) view returns (uint)",
         "function decimals() view returns (uint8)",
+        "function allowance(address owner, address spender) view returns (uint256)",
+        "function approve(address spender, uint256 amount) public returns (bool)",
       ],
       wallet
     );
@@ -59,7 +63,7 @@ describe("Lifi Basic", async () => {
       balanceUSDT,
     };
     console.log("balances", balances);
-    expect(true).to.be.true;
+    expect(false).to.be.true;
 
     // Let's get route
     const headers = {
@@ -68,9 +72,9 @@ describe("Lifi Basic", async () => {
     const params_route = {
       fromChain: 137,
       toChain: 137,
-      fromToken: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
-      toToken: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", // USDC
-      fromAmount: "5000000",
+      toToken: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f", // USDT
+      fromToken: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", // USDC
+      fromAmount: "4000000",
       fromAddress: wallet.address,
       toAddress: wallet.address,
     };
@@ -98,24 +102,81 @@ describe("Lifi Basic", async () => {
 
     const transactionRequest = response_route.transactionRequest;
     console.log("transactionRequest", transactionRequest);
-    expect(transactionRequest).to.be.exist;
+    expect(transactionRequest).to.exist;
 
-    // Let's execute route.
-    const tx = await wallet.sendTransaction(transactionRequest);
-    try {
-      await tx.wait();
-    } catch (err) {
-      console.log("err");
-      console.log(err);
-      expect(err).to.be.undefined;
+    // Extract the contract address from the transaction request
+    const contractAddress = transactionRequest.to;
+    console.log("Contract Address:", contractAddress);
+
+    // Ensure sufficient allowance
+    const allowanceUSDC = await erc20ForBalanceUSDC.allowance(
+      wallet.address,
+      contractAddress
+    );
+    if (allowanceUSDC < BigInt("4000000")) {
+      console.log("Approving USDC transfer...");
+      const approveTx = await erc20ForBalanceUSDC.approve(
+        contractAddress,
+        BigInt("4000000")
+      );
+      await approveTx.wait();
+      console.log("USDC transfer approved.");
     }
 
-    console.log("tx");
-    console.log(tx);
-    expect(tx.hash).to.be.exist;
+    // Preprocess transaction request
+    const preprocessTransactionRequest = (request: any) => {
+      return {
+        ...request,
+        value: request.value ? BigInt(request.value) : undefined,
+        gasLimit: request.gasLimit ? BigInt(request.gasLimit) : undefined,
+        gasPrice: request.gasPrice ? BigInt(request.gasPrice) : undefined,
+        maxFeePerGas: request.maxFeePerGas
+          ? BigInt(request.maxFeePerGas)
+          : undefined,
+        maxPriorityFeePerGas: request.maxPriorityFeePerGas
+          ? BigInt(request.maxPriorityFeePerGas)
+          : undefined,
+      };
+    };
+
+    const preprocessedTransactionRequest =
+      preprocessTransactionRequest(transactionRequest);
+    console.log(
+      "preprocessedTransactionRequest",
+      preprocessedTransactionRequest
+    );
+
+    // Estimate gas limit
+    try {
+      const estimatedGasLimit = await wallet.estimateGas(
+        preprocessedTransactionRequest
+      );
+      preprocessedTransactionRequest.gasLimit = estimatedGasLimit;
+      console.log("Estimated Gas Limit:", estimatedGasLimit);
+    } catch (err) {
+      console.error("Gas estimation failed:", err);
+      if (err.error && err.error.message) {
+        console.error("Revert reason:", err.error.message);
+      }
+      expect.fail("Gas estimation failed");
+    }
+
+    // Let's execute route.
+    try {
+      const tx = await wallet.sendTransaction(preprocessedTransactionRequest);
+      await tx.wait();
+      console.log("tx", tx);
+      expect(tx.hash).to.exist;
+    } catch (err) {
+      console.error("Transaction failed:", err);
+      if (err.error && err.error.message) {
+        console.error("Revert reason:", err.error.message);
+      }
+      expect.fail("Transaction reverted");
+    }
   }).timeout(4400000);
 
-  it.only("TEST LI.FI WITH SDK", async () => {
+  it("TEST LI.FI WITH SDK", async () => {
     // Config li.fi with polygon:
     const account = privateKeyToAccount(
       ("0x" + process.env.POLYGON_PRIVATE_KEY!) as Hex
@@ -176,6 +237,8 @@ describe("Lifi Basic", async () => {
     console.log("quote");
     console.log(quote);
 
+    expect(false).to.be.true;
+
     // Let's check balances on polygon.
     const balanceGasPol = await provider!.getBalance(wallet.address);
     const erc20ForBalanceUSDC = new ethers.Contract(
@@ -204,7 +267,6 @@ describe("Lifi Basic", async () => {
     console.log("balances", balances);
 
     // EXECUTE
-    /*
     const route = convertQuoteToRoute(quote);
 
     const executedRoute = await executeRoute(route, {
@@ -212,10 +274,9 @@ describe("Lifi Basic", async () => {
       updateRouteHook(route) {
         console.log("route hook update:");
         console.log(route);
-        },
-        });
-        console.log("executedRoute");
-        console.log(executedRoute);
-    */
+      },
+    });
+    console.log("executedRoute");
+    console.log(executedRoute);
   }).timeout(4400000);
 });
